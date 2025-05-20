@@ -1,0 +1,152 @@
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import useStore from "../store/useStore";
+import { Button } from "@/components/ui/button";
+import InvoiceForm from "../components/InvoiceForm";
+import { SlArrowRight } from "react-icons/sl";
+import EmptyImg from "../assets/empty-img.png";
+
+export default function InvoicesList() {
+  const navigate = useNavigate();
+  const { invoices, isDarkMode, selectedFilter, setFilter, addInvoice } =
+    useStore();
+  const [isNewInvoiceOpen, setIsNewInvoiceOpen] = useState(false);
+
+  const filteredInvoices = invoices.filter((inv) => {
+    if (selectedFilter == "all") return true;
+    return inv.status === selectedFilter;
+  });
+
+  return (
+    <div
+      className={`min-h-screen md:pl-20 ${
+        isDarkMode ? "bg-[#141625] text-white" : "bg-[#f8f8fb]"
+      }`}
+    >
+      <InvoiceForm
+        isOpen={isNewInvoiceOpen}
+        onClose={() => setIsNewInvoiceOpen(false)}
+        onSave={(newInvoice) => {
+          addInvoice(newInvoice);
+          setIsNewInvoiceOpen(false);
+        }}
+      />
+      <div className="max-w-3xl mx-auto p-6">
+        <div className="flex justify-between items-center mb-8 gap-4 flex-wrap">
+          <div className="flex flex-col gap-2">
+            <h1 className="text-2xl font-bold">Invoices</h1>
+            <p className="text-gray-500">
+              There are {filteredInvoices.length} total invoices
+            </p>
+          </div>
+
+          <div className="flex flex-wrap justify-between w-full md:w-[50%]  items-center">
+            <select
+              value={selectedFilter}
+              onChange={(e) => setFilter(e.target.value)}
+              className={`
+                px-2 font-bold rounded-lg outline-none cursor-pointer
+                ${isDarkMode ? " text-white bg-[#141625] " : "bg-transparent"}
+              `}
+            >
+              <option value="all">Filter by status</option>
+              <option value="paid">Paid</option>
+              <option value="pending">Pending</option>
+              <option value="draft">Draft</option>
+            </select>
+
+            <Button
+              onClick={() => setIsNewInvoiceOpen(true)}
+              className={`
+                md:py-6 rounded-full hover:bg-purple-500 font-bold flex items-center gap-2
+                ${
+                  isDarkMode
+                    ? "bg-[#7c5dfa] text-white "
+                    : "bg-purple-600 text-white "
+                }
+              `}
+            >
+              <span className="md:h-8 md:w-8 h-6 w-6 rounded-full bg-white text-purple-600 flex items-center justify-center">
+                +
+              </span>
+              New <span className="hidden sm:block"> Invoice</span>
+            </Button>
+          </div>
+        </div>
+
+        <div className="space-y-4 fex flex-wrap">
+          {filteredInvoices.length <= 0 && (
+            <div className="flex flex-col items-center justify-center text-center mt-[102px]">
+              <img
+                className="mb-[40px] md:mb-[64px] max-w-[241px] w-[100%] max-h-[200px] h-[100%] "
+                src={EmptyImg}
+                alt="empty logo"
+              />
+              <h1 className="text-[20px]  mb-[24px] font-bold animate-slide-down ">
+                There is nothing here
+              </h1>
+              <p
+                onClick={() => setIsNewInvoiceOpen(true)}
+                className=" text-[12px] animate-slide-down "
+              >
+                Create an invoice by clicking the <br />
+                <span className="font-bold"> New</span> button and get started
+              </p>
+            </div>
+          )}
+          {filteredInvoices.map((invoice) => (
+            <div
+              key={invoice.id}
+              className={`
+                ${isDarkMode ? "bg-[#1E2139]" : "bg-white"}
+                 p-6 rounded-lg text-left shadow-lg  flex items-center justify-between relative flex-wrap
+                cursor-pointer hover:border hover:border-purple-600 md:pr-10 transition-all
+              `}
+              onClick={() => navigate(`/invoice/${invoice.id}`)}
+            >
+              <div className="flex gap-4 text-left min-w-0.5 items-center flex-col sm:flex-row ">
+                <span className="font-bold  text-lg md:text-xl text-left">
+                  <span className="text-[#7E88C3]">#</span>
+                  {invoice.id}
+                </span>
+                <span className="text-[#858BB2]">Due {invoice.paymentDue}</span>
+                <span className="text-[#858BB2] hidden sm:block line-clamp-1">
+                  {invoice.clientName}
+                </span>
+                <span className="text-xl sm:hidden  font-bold">
+                  £ {invoice.total.toFixed(2)}
+                </span>
+              </div>
+
+              <div className="flex gap-8 items-center min-w-0.5 sm:flex-row flex-col">
+                <span className="text-xl hidden sm:block font-bold">
+                  £ {invoice.total.toFixed(2)}
+                </span>
+                <span className="sm:hidden line-clamp-1">
+                  {invoice.clientName}
+                </span>
+                <div
+                  className={`
+                  px-4 py-2 w-28 rounded-md flex items-center gap-2 text-[14px] font-bold
+                  ${
+                    invoice.status === "paid"
+                      ? "bg-green-100 text-[#33D69F]"
+                      : invoice.status == "pending"
+                      ? "bg-orange-100 text-[#FF8F00]"
+                      : "bg-gray-100 text-gray-600"
+                  }
+                `}
+                >
+                  <span className="text-2xl">•</span>{" "}
+                  {invoice.status.charAt().toUpperCase() +
+                    invoice.status.slice(1)}
+                </div>
+              </div>
+              <SlArrowRight className="absolute md:block hidden  top-[40%] right-3" />
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
