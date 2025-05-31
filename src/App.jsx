@@ -35,7 +35,7 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen">
       {loading ? <Loader /> : <RouterProvider router={router} />}
     </div>
   );
